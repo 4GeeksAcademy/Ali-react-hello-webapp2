@@ -1,42 +1,95 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			people: [],
+			personDetails: {
+				description: "",
+				properties: {}
+			},
+			starships: [],
+			planets: [],
+			planetsDetails: {
+				description: "",
+				properties: {}
+			},
+			favorites: []
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
+			getPeople: async () => {
+				try {
+					const response = await fetch("https://www.swapi.tech/api/people/");
+					if (!response.ok) {
+						throw new Error(`${response.status} ${response.statusText}`);
+					}
+					const data = await response.json();
+					setStore({ people: data.results });
+				} catch (error) {
+					console.error("Error fetching people:", error);
+				}
 			},
-			loadSomeData: () => {
-				/**
-					fetch().then().then(data => setStore({ "foo": data.bar }))
-				*/
+			getPersonDetails: async (uid) => {
+				try {
+					const response = await fetch(`https://www.swapi.tech/api/people/${uid}`);
+					if (!response.ok) {
+						throw new Error(`${response.status} ${response.statusText}`);
+					}
+					const data = await response.json();
+					const personDetails = {
+						description: data.result.description,
+						properties: { ...data.result.properties }
+					};
+					setStore({ personDetails: personDetails });
+				} catch (error) {
+					console.error("Error fetching person details:", error);
+				}
 			},
-			changeColor: (index, color) => {
-				//get the store
+			getPlanetDetails: async (id) => {
+				try {
+					const response = await fetch(`https://www.swapi.tech/api/planets/${id}`);
+					if (!response.ok) {
+						throw new Error(`${response.status} ${response.statusText}`);
+					}
+					const data = await response.json();
+					const planetsDetails = {
+						description: data.result.description,
+						properties: { ...data.result.properties }
+					};
+					setStore({ planetsDetails: planetsDetails });
+				} catch (error) {
+					console.error("Error fetching planet details:", error);
+				}
+			},
+			getVehicles: async () => {
+				try {
+					const response = await fetch("https://www.swapi.tech/api/starships/");
+					if (!response.ok) {
+						throw new Error(`${response.status} ${response.statusText}`);
+					}
+					const data = await response.json();
+					setStore({ starships: data.results });
+				} catch (error) {
+					console.error("Error fetching starships:", error);
+				}
+			},
+			getPlanets: async () => {
+				try {
+					const response = await fetch("https://www.swapi.tech/api/planets/");
+					if (!response.ok) {
+						throw new Error(`${response.status} ${response.statusText}`);
+					}
+					const data = await response.json();
+					setStore({ planets: data.results });
+				} catch (error) {
+					console.error("Error fetching planets:", error);
+				}
+			},
+			addFavorite: (item) => {
 				const store = getStore();
-
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
-
-				//reset the global store
-				setStore({ demo: demo });
+				setStore({ favorites: [...store.favorites, item] });
+			},
+			removeFavorite: (item) => {
+				const store = getStore();
+				setStore({ favorites: store.favorites.filter(fav => fav !== item) });
 			}
 		}
 	};
